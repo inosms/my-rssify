@@ -1,0 +1,25 @@
+# Hacker News – Best  (verified 2026-03-24, link-only mode)
+# /best = top stories over the past few days, sorted by popularity
+[[feeds]]
+name          = "Hacker News – Best"
+url           = "https://news.ycombinator.com/best"
+post_selector = "span.titleline > a"
+
+# Mistral AI News  (verified 2026-03-24, sitemap mode)
+[[feeds]]
+name               = "Mistral AI News"
+url                = "https://mistral.ai/news"
+sitemap_url        = "https://mistral.ai/sitemap.xml"
+sitemap_filter     = "https://mistral.ai/news/"
+content_selector   = "div.blog-rich-text"
+title_selector     = "title"
+title_strip_suffix = " | Mistral AI"
+
+# Zen Habits  (verified 2026-03-24)
+[[feeds]]
+name             = "Zen Habits"
+url              = "https://zenhabits.net/archives/"
+post_selector    = "div.post-title a"
+sitemap_url      = "https://zenhabits.net/sitemap.xml"
+content_selector = "div.post-content"
+title_selector   = "article.post h2"

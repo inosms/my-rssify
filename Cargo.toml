@@ -1,0 +1,21 @@
+[package]
+name    = "rssify"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "rssify"
+path = "src/main.rs"
+
+[dependencies]
+ureq    = { version = "2", features = ["tls"] }
+scraper = "0.19"
+serde   = { version = "1", features = ["derive"] }
+toml    = "0.8"
+rss        = "2"
+chrono     = "0.4"
+clap    = { version = "4", features = ["derive"] }
+url     = "2"
+
+[dev-dependencies]
+tempfile = "3"

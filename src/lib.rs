@@ -397,10 +397,22 @@ fn extract_posts(
 }
 
 fn fetch_url(url: &str) -> Result<String, Box<dyn std::error::Error>> {
-    Ok(ureq::get(url)
-        .set("User-Agent", "Mozilla/5.0 (compatible; rssify/0.1)")
-        .call()?
-        .into_string()?)
+    let max_retries = 3;
+    for attempt in 0..max_retries {
+        match ureq::get(url)
+            .set("User-Agent", "Mozilla/5.0 (compatible; rssify/0.1)")
+            .call()
+        {
+            Ok(resp) => return Ok(resp.into_string()?),
+            Err(ureq::Error::Status(429, _)) if attempt < max_retries - 1 => {
+                let wait = (attempt + 1) * 5;
+                eprintln!("   ⏳ 429 rate-limited, retrying in {}s…", wait);
+                std::thread::sleep(std::time::Duration::from_secs(wait as u64));
+            }
+            Err(e) => return Err(format!("{}: {}", url, e).into()),
+        }
+    }
+    Err(format!("{}: 429 after {} retries", url, max_retries).into())
 }
 
 fn fetch_article(

@@ -9,7 +9,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -46,16 +46,19 @@ jobs:
       - name: Build rssify (release)
         run: cargo build --release
 
-      # ── Restore previous RSS files so dedup works across runs ────────
-      - uses: actions/cache@v4
-        with:
-          path: rss
-          key: rss-feeds-${{ github.run_id }}
-          restore-keys: |
-            rss-feeds-
+      # ── RSS files live in rss/ in the repo; checkout restores them ──
 
       - name: Generate RSS feeds
         run: ./target/release/rssify -o rss
+
+      # ── Commit RSS files back to the repo so dedup persists ──────────
+      - name: Commit RSS feeds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add rss/
+          git diff --cached --quiet || git commit -m "chore: update RSS feeds [skip ci]"
+          git push
 
       # ── Prepare site directory for Pages ─────────────────────────────
       - name: Prepare Pages site

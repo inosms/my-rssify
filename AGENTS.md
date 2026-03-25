@@ -37,6 +37,7 @@ curl -s "ARTICLE_URL" | grep -E 'class="[^"]*(content|body|post)[^"]*"' | head -
 name             = "Site Name"
 url              = "INDEX_URL"
 post_selector    = "SELECTOR"
+link_selector    = "SELECTOR"          # optional: override item link
 sitemap_url      = "SITEMAP_URL"       # optional: for pub dates
 content_selector = "SELECTOR"          # optional: omit for link-only
 title_selector   = "SELECTOR"

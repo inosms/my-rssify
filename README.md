@@ -40,6 +40,7 @@ url              = "https://…"         # required — index page or channel li
 
 # Post discovery (at least one required)
 post_selector    = "div.post a"        # CSS selector for post links on the index page
+link_selector    = "span.age > a"      # optional: override item link (titles still from post_selector)
 sitemap_url      = "https://…/sitemap.xml"  # sitemap for post discovery or dates
 sitemap_filter   = "https://…/blog/"   # only URLs matching this prefix
 

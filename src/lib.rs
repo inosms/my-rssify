@@ -53,6 +53,7 @@ pub struct FeedConfig {
     //   sitemap_url   → parse a sitemap.xml for URLs
     // If both are set, posts come from the index and the sitemap provides dates.
     pub post_selector: Option<String>,
+    pub link_selector: Option<String>,
     pub sitemap_url: Option<String>,
     pub sitemap_filter: Option<String>,
 
@@ -138,7 +139,7 @@ pub fn process_feed(
         println!("   Fetching index : {}", cfg.url);
         let html = fetch_url(&cfg.url)?;
         let doc = Html::parse_document(&html);
-        let p = extract_posts(&doc, &base_url, selector);
+        let p = extract_posts(&doc, &base_url, selector, cfg.link_selector.as_deref());
         println!("   Found {} post link(s) on index", p.len());
         p
     } else if let Some(sitemap_url) = &cfg.sitemap_url {
@@ -297,12 +298,66 @@ fn build_item(url: &str, title: &str, description: &str, pub_date: &str) -> rss:
 
 // ─── HTML scraping ──────────────────────────────────────────────────────────
 
-fn extract_posts(doc: &Html, base_url: &Url, post_selector: &str) -> Vec<(String, String)> {
+fn extract_posts(
+    doc: &Html,
+    base_url: &Url,
+    post_selector: &str,
+    link_selector: Option<&str>,
+) -> Vec<(String, String)> {
     let sel = match Selector::parse(post_selector) {
         Ok(s) => s,
         Err(_) => return Vec::new(),
     };
     let a_sel = Selector::parse("a").unwrap();
+
+    // If link_selector is set, collect links from it separately and zip with titles.
+    if let Some(ls) = link_selector {
+        let link_sel = match Selector::parse(ls) {
+            Ok(s) => s,
+            Err(_) => return Vec::new(),
+        };
+        let titles: Vec<String> = doc
+            .select(&sel)
+            .map(|el| {
+                let t = el.text().collect::<String>();
+                t.trim().to_string()
+            })
+            .collect();
+        let links: Vec<String> = doc
+            .select(&link_sel)
+            .filter_map(|el| {
+                let href = if el.value().name() == "a" {
+                    el.value().attr("href").unwrap_or("")
+                } else {
+                    el.select(&a_sel)
+                        .next()
+                        .and_then(|a| a.value().attr("href"))
+                        .unwrap_or("")
+                };
+                if href.is_empty() {
+                    return None;
+                }
+                Some(
+                    base_url
+                        .join(href)
+                        .map(|u| u.to_string())
+                        .unwrap_or_else(|_| href.to_string()),
+                )
+            })
+            .collect();
+        let mut seen = HashSet::new();
+        return titles
+            .into_iter()
+            .zip(links)
+            .filter(|(_, url)| seen.insert(url.clone()))
+            .map(|(t, url)| {
+                let title = if t.is_empty() { url.clone() } else { t };
+                (url, title)
+            })
+            .collect();
+    }
+
+    // Default: both href and title from post_selector elements.
     let mut seen = HashSet::new();
     let mut out = Vec::new();
 

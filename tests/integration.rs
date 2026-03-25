@@ -49,6 +49,7 @@ fn zen_habits_cfg() -> FeedConfig {
         name: "Zen Habits".to_string(),
         url: "https://zenhabits.net/archives/".to_string(),
         post_selector: Some("div.post-title a".to_string()),
+        link_selector: None,
         sitemap_url: Some("https://zenhabits.net/sitemap.xml".to_string()),
         sitemap_filter: None,
         content_selector: Some("div.post-content".to_string()),
@@ -62,6 +63,7 @@ fn mistral_cfg() -> FeedConfig {
         name: "Mistral AI News".to_string(),
         url: "https://mistral.ai/news".to_string(),
         post_selector: None,
+        link_selector: None,
         sitemap_url: Some("https://mistral.ai/sitemap.xml".to_string()),
         sitemap_filter: Some("https://mistral.ai/news/".to_string()),
         content_selector: Some("div.blog-rich-text".to_string()),
@@ -75,6 +77,7 @@ fn hn_cfg() -> FeedConfig {
         name: "Hacker News – Best".to_string(),
         url: "https://news.ycombinator.com/best".to_string(),
         post_selector: Some("span.titleline > a".to_string()),
+        link_selector: Some("span.age > a".to_string()),
         sitemap_url: None,
         sitemap_filter: None,
         content_selector: None,
@@ -259,8 +262,8 @@ fn hn_returns_stories_as_link_only_items() {
 
         let link = item.link().expect("item must have a <link>");
         assert!(
-            link.starts_with("https://") || link.starts_with("http://"),
-            "<link> is not an http(s) URL: {}",
+            link.starts_with("https://news.ycombinator.com/item?id="),
+            "<link> should point to HN discussion page, got: {}",
             link
         );
     }

@@ -1,9 +1,11 @@
-# Hacker News – Best  (verified 2026-03-24, link-only mode)
+# Hacker News – Best  (verified 2026-03-25, link-only mode)
 # /best = top stories over the past few days, sorted by popularity
+# link_selector overrides the link: items point to HN discussion, titles from articles
 [[feeds]]
 name          = "Hacker News – Best"
 url           = "https://news.ycombinator.com/best"
 post_selector = "span.titleline > a"
+link_selector = "span.age > a"
 
 # Mistral AI News  (verified 2026-03-24, sitemap mode)
 [[feeds]]

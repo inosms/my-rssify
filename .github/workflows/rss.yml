@@ -1,4 +1,4 @@
-name: Generate RSS feeds and deploy to GitHub Pages
+name: Generate RSS feeds
 
 on:
   schedule:
@@ -10,19 +10,14 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: rss
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  generate:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -60,16 +55,4 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: update RSS feeds [skip ci]"
           git push
 
-      # ── Prepare site directory for Pages ─────────────────────────────
-      - name: Prepare Pages site
-        run: |
-          mkdir -p _site
-          cp rss/*.xml _site/
-          cp pages-index.html _site/index.html
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

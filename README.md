@@ -57,7 +57,7 @@ rssify [OPTIONS]
 
   -c, --config <FILE>           Config file [default: feeds.toml]
   -o, --output-path <DIR>       Output directory [default: ./rss]
-  -n, --top-n <N>               Max items per feed [default: 10]
+  -n, --top-n <N>               Max items per feed [default: 5]
   -d, --delay-ms <MS>           Delay between requests [default: 500]
       --retrieve-before <DATE>  Only items before this date (YYYY-MM-DD)
 ```

@@ -44,7 +44,7 @@ jobs:
       # ── RSS files live in rss/ in the repo; checkout restores them ──
 
       - name: Generate RSS feeds
-        run: ./target/release/rssify -o rss
+        run: ./target/release/rssify -o rss  -n 3
 
       # ── Commit RSS files back to the repo so dedup persists ──────────
       - name: Commit RSS feeds
@@ -54,5 +54,3 @@ jobs:
           git add rss/
           git diff --cached --quiet || git commit -m "chore: update RSS feeds [skip ci]"
           git push
-
-

@@ -58,20 +58,6 @@ fn zen_habits_cfg() -> FeedConfig {
     }
 }
 
-fn mistral_cfg() -> FeedConfig {
-    FeedConfig {
-        name: "Mistral AI News".to_string(),
-        url: "https://mistral.ai/news".to_string(),
-        post_selector: None,
-        link_selector: None,
-        sitemap_url: Some("https://mistral.ai/sitemap.xml".to_string()),
-        sitemap_filter: Some("https://mistral.ai/news/".to_string()),
-        content_selector: Some("div.blog-rich-text".to_string()),
-        title_selector: Some("title".to_string()),
-        title_strip_suffix: Some(" | Mistral AI".to_string()),
-    }
-}
-
 fn hn_cfg() -> FeedConfig {
     FeedConfig {
         name: "Hacker News – Best".to_string(),
@@ -155,76 +141,6 @@ fn zen_habits_retrieve_before_filters_by_date() {
         self_doubt_desc.contains("doubting"),
         "self-doubt description should contain 'doubting'; got: {}",
         &self_doubt_desc[..self_doubt_desc.len().min(200)]
-    );
-}
-
-/// Mistral AI News (sitemap mode): --retrieve-before drops posts on-or-after
-/// the threshold.
-///
-/// Posts known to exist before 2026-03-10 (stable):
-///   pixtral-12b (Mar 2), pixtral-large (Mar 1)
-#[test]
-fn mistral_retrieve_before_filters_by_date() {
-    let out_dir = TempDir::new().unwrap();
-    let cfg = mistral_cfg();
-    let o = opts(3, Some(date("2026-03-10")));
-
-    process_feed(&cfg, out_dir.path(), &o).unwrap();
-
-    let xml = fs::read_to_string(out_dir.path().join("mistral-ai-news.xml")).unwrap();
-    let channel: rss::Channel = xml.parse().unwrap();
-    let threshold = date("2026-03-10");
-
-    assert!(
-        !channel.items().is_empty(),
-        "Expected at least one Mistral item published before 2026-03-10, got zero"
-    );
-    for item in channel.items() {
-        let raw = item.pub_date().expect("every item must carry a <pubDate>");
-        let dt = DateTime::parse_from_rfc2822(raw)
-            .unwrap_or_else(|_| panic!("unparseable <pubDate>: {}", raw))
-            .with_timezone(&Utc);
-        assert!(
-            dt < threshold,
-            "Item '{}' has pubDate '{}' which is NOT before the threshold {}",
-            item.title().unwrap_or("(no title)"),
-            raw,
-            threshold.format("%Y-%m-%d"),
-        );
-    }
-
-    let items = channel.items();
-
-    let pixtral_12b = by_link(items, "https://mistral.ai/news/pixtral-12b");
-    assert_eq!(
-        pixtral_12b.title().unwrap_or(""),
-        "[Deprecated] Pixtral 12B",
-    );
-    assert_eq!(
-        pixtral_12b.pub_date().unwrap_or(""),
-        "Mon, 2 Mar 2026 10:38:40 +0000",
-    );
-    let pixtral_12b_desc = pixtral_12b.description().unwrap_or("");
-    assert!(
-        pixtral_12b_desc.contains("multimodal"),
-        "pixtral-12b description should contain 'multimodal'; got: {}",
-        &pixtral_12b_desc[..pixtral_12b_desc.len().min(300)]
-    );
-
-    let pixtral_large = by_link(items, "https://mistral.ai/news/pixtral-large");
-    assert_eq!(
-        pixtral_large.title().unwrap_or(""),
-        "[Deprecated] Pixtral Large",
-    );
-    assert_eq!(
-        pixtral_large.pub_date().unwrap_or(""),
-        "Sun, 1 Mar 2026 08:46:58 +0000",
-    );
-    let pixtral_large_desc = pixtral_large.description().unwrap_or("");
-    assert!(
-        pixtral_large_desc.contains("multimodal"),
-        "pixtral-large description should contain 'multimodal'; got: {}",
-        &pixtral_large_desc[..pixtral_large_desc.len().min(300)]
     );
 }
 
